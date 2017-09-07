@@ -307,10 +307,17 @@ class _HtmlTestResult(_TextTestResult):
         report_name = testRunner.report_title
         start_time = testRunner.start_time
         elapsed_time = testRunner.time_taken
+        testcase_name = ""
 
         report_headers, total_test = self.get_report_attributes(tests, start_time, elapsed_time)
-        testcase_name = test_class_name.split("_")[1]
+
+        if testRunner.report_combined:
+            testcase_name = testRunner.output
+        else:
+            testcase_name = test_class_name.split("_")[1]
         test_cases_list = []
+
+        print("### debug: testcase_name: {}".format(testcase_name))
 
         # Sort test by number if they have
         tests = self.sort_test_list(tests)
@@ -329,16 +336,25 @@ class _HtmlTestResult(_TextTestResult):
         """ Generate report for all given runned test object. """
         all_results = self._get_info_by_testcase()
 
-        for testcase_class_name, all_tests in all_results.items():
+        if testRunner.report_combined:
+            for testcase_class_name, all_tests in all_results.items():
+                tests = self._report_tests(testcase_class_name, all_tests, testRunner)
+                if testRunner.outsuffix:
+                    testcase_class_name = "Test_{}_{}.html".format(testcase_class_name,
+                                                                   testRunner.outsuffix)
+                    tests = self._report_tests(testcase_class_name, all_tests,
+                                               testRunner)
+            self.generate_file(testRunner.output, "Test_{}.html".format(testRunner.output), tests)
+        else:
+            for testcase_class_name, all_tests in all_results.items():
+                if testRunner.outsuffix:
+                    testcase_class_name = "Test_{}_{}.html".format(testcase_class_name,
+                                                                   testRunner.outsuffix)
 
-            if testRunner.outsuffix:
-                testcase_class_name = "Test_{}_{}.html".format(testcase_class_name,
-                                                               testRunner.outsuffix)
-
-            tests = self._report_tests(testcase_class_name, all_tests,
-                                       testRunner)
-            self.generate_file(testRunner.output, testcase_class_name,
-                               tests)
+                tests = self._report_tests(testcase_class_name, all_tests,
+                                           testRunner)
+                self.generate_file(testRunner.output, testcase_class_name,
+                                   tests)
 
     def generate_file(self, output, report_name, report):
         """ Generate the report file in the given path. """

@@ -158,7 +158,7 @@ You can access these values a vars, for rendering just surround it with `{{ var 
 Contributions are welcome, and they are greatly appreciated! Every
 little bit helps, and credit will always be given.
 
-For more info please click [here](./CONTRIBUTING.md)
+For more info please click [heREADME.mdre](./CONTRIBUTING.md)
 
 ## Credits
 

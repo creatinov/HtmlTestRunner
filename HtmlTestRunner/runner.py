@@ -13,10 +13,13 @@ class HTMLTestRunner(TextTestRunner):
 
     def __init__(self, output, verbosity=2, stream=sys.stderr,
                  descriptions=True, failfast=False, buffer=False,
-                 report_title=None, template=None, resultclass=None):
+                 report_title=None, template=None, resultclass=None,
+                 report_combined=False):
         self.verbosity = verbosity
         self.output = output
         self.encoding = UTF8
+        ### 20170907 combine
+        self.report_combined = report_combined
 
         TextTestRunner.__init__(self, stream, descriptions, verbosity,
                                 failfast=failfast, buffer=buffer)

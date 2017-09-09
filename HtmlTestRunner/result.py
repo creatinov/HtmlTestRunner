@@ -215,8 +215,8 @@ class _HtmlTestResult(_TextTestResult):
             self.stream.writeln(self.separator2)
             self.stream.writeln('%s' % test_info.get_error_info())
 
-    def _get_info_by_testcase(self):
-        """ Organize test results  by TestCase module. """
+    def _get_info_by_testcase(self, is_combnined, testname):
+        """ Organize test results by TestCase module. """
 
         tests_by_testcase = {}
 
@@ -224,11 +224,13 @@ class _HtmlTestResult(_TextTestResult):
             for test_info in tests:
                 if isinstance(test_info, tuple):
                     test_info = test_info[0]
-                testcase_name = test_info.test_name
+                if is_combnined:
+                    testcase_name = testname
+                else:
+                    testcase_name = test_info.test_name
                 if testcase_name not in tests_by_testcase:
                     tests_by_testcase[testcase_name] = []
                 tests_by_testcase[testcase_name].append(test_info)
-
         return tests_by_testcase
 
     def get_report_attributes(self, tests, start_time, elapsed_time):
@@ -307,17 +309,11 @@ class _HtmlTestResult(_TextTestResult):
         report_name = testRunner.report_title
         start_time = testRunner.start_time
         elapsed_time = testRunner.time_taken
-        testcase_name = ""
 
         report_headers, total_test = self.get_report_attributes(tests, start_time, elapsed_time)
 
-        if testRunner.report_combined:
-            testcase_name = testRunner.output
-        else:
-            testcase_name = test_class_name.split("_")[1]
+        testcase_name = test_class_name.split("_")[1]
         test_cases_list = []
-
-        print("### debug: testcase_name: {}".format(testcase_name))
 
         # Sort test by number if they have
         tests = self.sort_test_list(tests)
@@ -334,21 +330,19 @@ class _HtmlTestResult(_TextTestResult):
 
     def generate_reports(self, testRunner):
         """ Generate report for all given runned test object. """
-        all_results = self._get_info_by_testcase()
+        if testRunner.report_combined:
+            all_results = self._get_info_by_testcase(True, testRunner.output)
+        else:
+            all_results = self._get_info_by_testcase()
 
         if testRunner.report_combined:
             for testcase_class_name, all_tests in all_results.items():
-                tests = self._report_tests(testcase_class_name, all_tests, testRunner)
-                if testRunner.outsuffix:
-                    testcase_class_name = "Test_{}_{}.html".format(testcase_class_name,
-                                                                   testRunner.outsuffix)
-                    tests = self._report_tests(testcase_class_name, all_tests,
-                                               testRunner)
-            self.generate_file(testRunner.output, "Test_{}.html".format(testRunner.output), tests)
+                tests = self._report_tests("result_{}.html".format(testRunner.output), all_tests, testRunner)
+                self.generate_file(testRunner.output, "result_{}.html".format(testRunner.output), tests)
         else:
             for testcase_class_name, all_tests in all_results.items():
                 if testRunner.outsuffix:
-                    testcase_class_name = "Test_{}_{}.html".format(testcase_class_name,
+                    testcase_class_name = "result_{}_{}.html".format(testcase_class_name,
                                                                    testRunner.outsuffix)
 
                 tests = self._report_tests(testcase_class_name, all_tests,
